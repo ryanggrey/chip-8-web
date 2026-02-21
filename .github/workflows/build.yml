@@ -21,3 +21,29 @@ jobs:
         tag: swift-6.0.3-RELEASE
     - name: Build
       run: swift package --swift-sdk 6.0.3-RELEASE-wasm32-unknown-wasi js
+
+    - name: Deploy to Amplify
+      if: github.event_name == 'push'
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: eu-west-2
+        AMPLIFY_APP_ID: ${{ secrets.AMPLIFY_APP_ID }}
+      run: |
+        cd .build/plugins/PackageToJS/outputs/Package
+        zip -r "$GITHUB_WORKSPACE/deploy.zip" .
+        cd "$GITHUB_WORKSPACE"
+
+        DEPLOY_OUTPUT=$(aws amplify create-deployment \
+          --app-id "$AMPLIFY_APP_ID" \
+          --branch-name main)
+
+        JOB_ID=$(echo "$DEPLOY_OUTPUT" | jq -r '.jobId')
+        UPLOAD_URL=$(echo "$DEPLOY_OUTPUT" | jq -r '.zipUploadUrl')
+
+        curl -T deploy.zip "$UPLOAD_URL"
+
+        aws amplify start-deployment \
+          --app-id "$AMPLIFY_APP_ID" \
+          --branch-name main \
+          --job-id "$JOB_ID"
