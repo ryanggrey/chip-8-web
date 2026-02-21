@@ -13,6 +13,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - uses: swift-actions/setup-swift@v2
+      with:
+        swift-version: "6.0.2"
     - uses: swiftwasm/setup-swiftwasm@v2
       with:
         tag: swift-6.0.2-RELEASE
