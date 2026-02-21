@@ -22,6 +22,12 @@ jobs:
     - name: Build
       run: swift package --swift-sdk 6.0.3-RELEASE-wasm32-unknown-wasi js
 
+    - name: Copy resources into build output
+      if: github.event_name == 'push'
+      run: |
+        cp Resources/index.html .build/plugins/PackageToJS/outputs/Package/
+        cp -r Resources/roms .build/plugins/PackageToJS/outputs/Package/
+
     - name: Deploy to Amplify
       if: github.event_name == 'push'
       env:
