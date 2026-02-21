@@ -1,4 +1,4 @@
-import JavaScriptKit
+@preconcurrency import JavaScriptKit
 import Chip8Emulator
 
 // MARK: - Web Delegate
@@ -10,10 +10,6 @@ class WebDelegate: Chip8EngineDelegate {
     let screenWidth: Int = 64
     let screenHeight: Int = 32
 
-    // Web Audio API objects for beep
-    var audioCtx: JSObject?
-    var oscillator: JSObject?
-    var gainNode: JSObject?
     var isBeeping = false
 
     init(canvas: JSObject) {
@@ -26,10 +22,8 @@ class WebDelegate: Chip8EngineDelegate {
         let height = screenHeight
         let scale = pixelScale
 
-        // Clear canvas
         _ = ctx.clearRect!(0, 0, width * scale, height * scale)
 
-        // Draw pixels
         ctx.fillStyle = .string("#33ff33")
         for y in 0..<height {
             for x in 0..<width {
@@ -58,11 +52,9 @@ class WebDelegate: Chip8EngineDelegate {
         _ = gain.connect!(actx.destination)
         _ = osc.start!()
 
-        // Stop after 100ms
         let duration = 0.1
         _ = osc.stop!(actx.currentTime.number! + duration)
 
-        // Reset beeping flag after sound finishes
         _ = JSObject.global.setTimeout!(
             JSClosure { [weak self] _ in
                 self?.isBeeping = false
@@ -75,12 +67,6 @@ class WebDelegate: Chip8EngineDelegate {
 
 // MARK: - Keyboard Mapping
 
-/// Maps browser keyboard keys to Chip-8 input codes
-/// Chip-8 keypad:    Keyboard mapping:
-///  1 2 3 C           1 2 3 4
-///  4 5 6 D           Q W E R
-///  7 8 9 E           A S D F
-///  A 0 B F           Z X C V
 func mapKeyToChip8(_ key: String) -> Chip8InputCode? {
     switch key {
     case "1": return .one
@@ -103,16 +89,21 @@ func mapKeyToChip8(_ key: String) -> Chip8InputCode? {
     }
 }
 
-// MARK: - Setup
+// MARK: - Globals
 
 let document = JSObject.global.document
-let canvas = document.getElementById!("screen").object!
-let engine = Chip8Engine()
+let canvas = document.getElementById("screen").object!
+nonisolated(unsafe) let engine = Chip8Engine()
 let webDelegate = WebDelegate(canvas: canvas)
+nonisolated(unsafe) var animationFrameId: JSValue = .undefined
+nonisolated(unsafe) var gameLoop: JSClosure!
+let ticksPerFrame = 10
+
+// MARK: - Setup
+
 engine.delegate = webDelegate
 
-// MARK: - Keyboard Listeners
-
+// Keyboard listeners
 let keyDownHandler = JSClosure { args in
     guard let event = args.first?.object else { return .undefined }
     let key = event.key.string!
@@ -133,8 +124,8 @@ let keyUpHandler = JSClosure { args in
     return .undefined
 }
 
-_ = document.addEventListener!("keydown", keyDownHandler)
-_ = document.addEventListener!("keyup", keyUpHandler)
+_ = document.addEventListener("keydown", keyDownHandler)
+_ = document.addEventListener("keyup", keyUpHandler)
 
 // MARK: - ROM Loading
 
@@ -144,7 +135,6 @@ func startEmulator(with romBytes: [UInt8]) {
     startGameLoop()
 }
 
-/// Load ROM from a Uint8Array JSValue
 func loadRomFromJSArray(_ arrayBuffer: JSValue) {
     let uint8Array = JSObject.global.Uint8Array.function!.new(arrayBuffer)
     let length = Int(uint8Array.length.number!)
@@ -156,7 +146,7 @@ func loadRomFromJSArray(_ arrayBuffer: JSValue) {
 }
 
 // File input handler
-let fileInput = document.getElementById!("rom-file").object!
+let fileInput = document.getElementById("rom-file").object!
 let fileChangeHandler = JSClosure { _ in
     let files = fileInput.files
     guard files.length.number! > 0 else { return .undefined }
@@ -173,7 +163,7 @@ let fileChangeHandler = JSClosure { _ in
 _ = fileInput.addEventListener!("change", fileChangeHandler)
 
 // Bundled ROM selector
-let romSelect = document.getElementById!("rom-select").object!
+let romSelect = document.getElementById("rom-select").object!
 let romSelectHandler = JSClosure { _ in
     let value = romSelect.value.string!
     guard !value.isEmpty else { return .undefined }
@@ -192,9 +182,6 @@ _ = romSelect.addEventListener!("change", romSelectHandler)
 
 // MARK: - Game Loop
 
-var animationFrameId: JSValue = .undefined
-let ticksPerFrame = 10 // ~600Hz at 60fps
-
 func startGameLoop() {
     let gameLoopClosure = JSClosure { _ in
         for _ in 0..<ticksPerFrame {
@@ -207,13 +194,11 @@ func startGameLoop() {
     animationFrameId = JSObject.global.requestAnimationFrame!(gameLoopClosure)
 }
 
-var gameLoop: JSClosure!
-
 // Draw initial blank screen
 let ctx = canvas.getContext!("2d").object!
 ctx.fillStyle = .string("#000000")
 _ = ctx.fillRect!(0, 0, 640, 320)
 
 // Status message
-let status = document.getElementById!("status").object!
+let status = document.getElementById("status").object!
 status.textContent = .string("Select a ROM to start playing")
