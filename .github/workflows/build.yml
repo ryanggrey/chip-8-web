@@ -13,8 +13,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - uses: swift-actions/setup-swift@v2
+      with:
+        swift-version: "6.0.3"
     - uses: swiftwasm/setup-swiftwasm@v2
       with:
-        tag: swift-6.0.2-RELEASE
+        tag: swift-6.0.3-RELEASE
     - name: Build
-      run: swift package --swift-sdk 6.0.2-RELEASE-wasm32-unknown-wasi js
+      run: swift package --swift-sdk 6.0.3-RELEASE-wasm32-unknown-wasi js
