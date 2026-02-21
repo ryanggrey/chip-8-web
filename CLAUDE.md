@@ -39,10 +39,25 @@ For local development, change `Package.swift` dependency to use a local path:
 ```
 CI uses the URL-based dependency pointing at the GitHub repo.
 
+## Deployment
+
+Hosted on AWS Amplify (manual deploy mode — no repo connection).
+
+- **URL:** https://swift-chip8.fallibledev.com
+- **Amplify app ID:** `d33c39pddjzsdk` (region `eu-west-2`)
+- **Pattern:** GitHub Actions builds WASM → pushes pre-built artifacts to Amplify via `create-deployment` API
+- **Why manual deploy:** Amplify's build environment doesn't have Swift/SwiftWasm, so we build in CI and push artifacts
+
+On push to `main`, the workflow zips `.build/plugins/PackageToJS/outputs/Package/` and deploys it. PRs only build (no deploy).
+
+### Future: Mobile support
+
+CHIP-8 input maps to a QWERTY keyboard (1234/QWER/ASDF/ZXCV → hex keypad). Touch input for mobile devices is not yet implemented.
+
 ## Workflow
 
 - Branch protection on `main`: PR required, `build` CI check required, enforce admins
-- CI: `.github/workflows/build.yml` — SwiftWasm build on Ubuntu
+- CI: `.github/workflows/build.yml` — SwiftWasm build on Ubuntu, deploy to Amplify on main
 
 ### PR flow
 
