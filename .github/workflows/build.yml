@@ -1,0 +1,20 @@
+name: Swift WASM
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: swiftwasm/setup-swiftwasm@v2
+      with:
+        swift-version: wasm-6.0.2-RELEASE
+    - name: Build
+      run: swift package --swift-sdk 6.0.2-RELEASE-wasm32-unknown-wasi js
