@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "Chip8Web",
     dependencies: [
-        .package(path: "../Chip8EmulatorPackage"),
+        .package(url: "https://github.com/ryanggrey/Chip8EmulatorPackage.git", from: "0.0.14"),
         .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", from: "0.20.0"),
     ],
     targets: [

@@ -156,8 +156,15 @@
         </div>
     </div>
 
+    <script type="importmap">
+    {
+        "imports": {
+            "@bjorn3/browser_wasi_shim": "https://esm.run/@bjorn3/browser_wasi_shim@0.3.0"
+        }
+    }
+    </script>
     <script type="module">
-        import { init } from "./.build/plugins/PackageToJS/outputs/Package/index.js";
+        import { init } from "./index.js";
         await init();
     </script>
 </body>
