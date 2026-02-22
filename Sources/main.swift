@@ -200,6 +200,10 @@ let ctx = canvas.getContext!("2d").object!
 ctx.fillStyle = .string("#000000")
 _ = ctx.fillRect!(0, 0, 640, 320)
 
+// Enable ROM controls now that listeners are attached
+romSelect.disabled = .boolean(false)
+fileInput.disabled = .boolean(false)
+
 // Status message
 let status = document.getElementById("status").object!
 status.textContent = .string("Select a ROM to start playing")
