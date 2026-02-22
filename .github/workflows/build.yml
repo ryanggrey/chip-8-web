@@ -27,6 +27,8 @@ jobs:
       run: |
         cp Resources/index.html .build/plugins/PackageToJS/outputs/Package/
         cp -r Resources/roms .build/plugins/PackageToJS/outputs/Package/
+        sed -i "s/__COMMIT_SHA__/$GITHUB_SHA/g" .build/plugins/PackageToJS/outputs/Package/index.html
+        sed -i "s/__COMMIT_SHORT__/${GITHUB_SHA::7}/g" .build/plugins/PackageToJS/outputs/Package/index.html
 
     - name: Deploy to Amplify
       if: github.event_name == 'push'
