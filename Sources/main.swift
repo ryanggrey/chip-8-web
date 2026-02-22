@@ -97,7 +97,7 @@ nonisolated(unsafe) let engine = Chip8Engine()
 let webDelegate = WebDelegate(canvas: canvas)
 nonisolated(unsafe) var animationFrameId: JSValue = .undefined
 nonisolated(unsafe) var gameLoop: JSClosure!
-let ticksPerFrame = 10
+let defaultTicksPerFrame = 7
 
 // MARK: - Setup
 
@@ -184,7 +184,8 @@ _ = romSelect.addEventListener!("change", romSelectHandler)
 
 func startGameLoop() {
     let gameLoopClosure = JSClosure { _ in
-        for _ in 0..<ticksPerFrame {
+        let ticks = Int(JSObject.global.chipTickRate.number ?? Double(defaultTicksPerFrame))
+        for _ in 0..<ticks {
             engine.tick()
         }
         animationFrameId = JSObject.global.requestAnimationFrame!(gameLoop)
