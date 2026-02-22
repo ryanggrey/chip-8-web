@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>CHIP-8 Emulator</title>
     <style>
         * {
@@ -31,6 +31,9 @@
             background: #000;
             image-rendering: pixelated;
             box-shadow: 0 0 20px #33ff3333;
+            width: 100%;
+            max-width: 640px;
+            height: auto;
         }
         .controls {
             margin: 16px 0;
@@ -61,41 +64,45 @@
             font-size: 14px;
             margin: 8px 0;
         }
-        .keyboard-guide {
-            margin-top: 20px;
-            border: 1px solid #444;
-            padding: 16px;
-            max-width: 500px;
-        }
-        .keyboard-guide h3 {
-            color: #33ff33;
-            margin-bottom: 12px;
-            font-size: 14px;
-        }
-        .key-grid {
+        .keypad {
+            margin-top: 16px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px 24px;
-            font-size: 13px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            width: 100%;
+            max-width: 640px;
         }
-        .key-grid .header {
+        .touch-key {
+            background: #222;
             color: #33ff33;
+            border: 1px solid #33ff33;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 20px;
             font-weight: bold;
-        }
-        .key-row {
+            padding: 14px 0;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
             display: flex;
-            gap: 4px;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1;
         }
-        kbd {
-            background: #333;
-            border: 1px solid #555;
-            border-radius: 3px;
-            padding: 2px 6px;
-            font-size: 12px;
-            color: #fff;
+        .touch-key .hex {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
         }
-        .arrow {
-            color: #666;
+        .touch-key:active,
+        .touch-key.pressed {
+            background: #33ff33;
+            color: #111;
+        }
+        .touch-key:active .hex,
+        .touch-key.pressed .hex {
+            color: #333;
         }
     </style>
 </head>
@@ -140,21 +147,51 @@
 
     <div id="status"></div>
 
-    <div class="keyboard-guide">
-        <h3>Keyboard Mapping</h3>
-        <div class="key-grid">
-            <div class="header">Keyboard</div>
-            <div class="header">CHIP-8 Keypad</div>
-            <div><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd></div>
-            <div class="arrow">&#8594; 1 2 3 C</div>
-            <div><kbd>Q</kbd> <kbd>W</kbd> <kbd>E</kbd> <kbd>R</kbd></div>
-            <div class="arrow">&#8594; 4 5 6 D</div>
-            <div><kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd></div>
-            <div class="arrow">&#8594; 7 8 9 E</div>
-            <div><kbd>Z</kbd> <kbd>X</kbd> <kbd>C</kbd> <kbd>V</kbd></div>
-            <div class="arrow">&#8594; A 0 B F</div>
-        </div>
+    <div class="keypad">
+        <button class="touch-key" data-key="1">1<span class="hex">1</span></button>
+        <button class="touch-key" data-key="2">2<span class="hex">2</span></button>
+        <button class="touch-key" data-key="3">3<span class="hex">3</span></button>
+        <button class="touch-key" data-key="4">4<span class="hex">C</span></button>
+        <button class="touch-key" data-key="q">Q<span class="hex">4</span></button>
+        <button class="touch-key" data-key="w">W<span class="hex">5</span></button>
+        <button class="touch-key" data-key="e">E<span class="hex">6</span></button>
+        <button class="touch-key" data-key="r">R<span class="hex">D</span></button>
+        <button class="touch-key" data-key="a">A<span class="hex">7</span></button>
+        <button class="touch-key" data-key="s">S<span class="hex">8</span></button>
+        <button class="touch-key" data-key="d">D<span class="hex">9</span></button>
+        <button class="touch-key" data-key="f">F<span class="hex">E</span></button>
+        <button class="touch-key" data-key="z">Z<span class="hex">A</span></button>
+        <button class="touch-key" data-key="x">X<span class="hex">0</span></button>
+        <button class="touch-key" data-key="c">C<span class="hex">B</span></button>
+        <button class="touch-key" data-key="v">V<span class="hex">F</span></button>
     </div>
+
+    <script>
+        document.querySelectorAll('.touch-key').forEach(btn => {
+            const key = btn.dataset.key;
+
+            function press(e) {
+                e.preventDefault();
+                if (btn.classList.contains('pressed')) return;
+                btn.classList.add('pressed');
+                document.dispatchEvent(new KeyboardEvent('keydown', { key }));
+            }
+
+            function release(e) {
+                e.preventDefault();
+                if (!btn.classList.contains('pressed')) return;
+                btn.classList.remove('pressed');
+                document.dispatchEvent(new KeyboardEvent('keyup', { key }));
+            }
+
+            btn.addEventListener('touchstart', press, { passive: false });
+            btn.addEventListener('touchend', release, { passive: false });
+            btn.addEventListener('touchcancel', release, { passive: false });
+            btn.addEventListener('mousedown', press);
+            btn.addEventListener('mouseup', release);
+            btn.addEventListener('mouseleave', release);
+        });
+    </script>
 
     <script type="importmap">
     {
