@@ -203,6 +203,7 @@ _ = ctx.fillRect!(0, 0, 640, 320)
 // Enable ROM controls now that listeners are attached
 romSelect.disabled = .boolean(false)
 fileInput.disabled = .boolean(false)
+_ = document.getElementById("loading").object!.classList.add("hidden")
 
 // Status message
 let status = document.getElementById("status").object!
