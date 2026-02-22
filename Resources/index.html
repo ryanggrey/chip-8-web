@@ -49,6 +49,17 @@
             justify-content: center;
             flex-shrink: 0;
         }
+        input[type="range"] {
+            accent-color: #33ff33;
+            width: 120px;
+            cursor: pointer;
+        }
+        .speed-display {
+            color: #33ff33;
+            font-size: 14px;
+            min-width: 3ch;
+            text-align: center;
+        }
         select, input[type="file"] {
             background: #222;
             color: #33ff33;
@@ -153,6 +164,12 @@
         <input type="file" id="rom-file" accept=".ch8,.rom,.bin">
     </div>
 
+    <div class="controls">
+        <label for="speed">Speed:</label>
+        <input type="range" id="speed" min="1" max="30" value="7">
+        <span class="speed-display" id="speed-display">7</span>
+    </div>
+
     <div id="status"></div>
 
     <div class="keypad">
@@ -177,6 +194,12 @@
     <a id="commit-badge" target="_blank" rel="noopener" href="https://github.com/ryanggrey/chip-8-web/commit/__COMMIT_SHA__" style="position:fixed;bottom:8px;right:8px;font-size:10px;color:#aaa;font-family:monospace;z-index:9999;background:rgba(0,0,0,0.5);padding:2px 6px;border-radius:4px;text-decoration:none;">__COMMIT_SHORT__</a>
 
     <script>
+        window.chipTickRate = 7;
+        document.getElementById('speed').addEventListener('input', function() {
+            window.chipTickRate = parseInt(this.value);
+            document.getElementById('speed-display').textContent = this.value;
+        });
+
         document.querySelectorAll('.touch-key').forEach(btn => {
             const key = btn.dataset.key;
 
